@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>لوحة تحكم المشرف - عقارات روما غزة</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Cairo', 'sans-serif'] },
+          colors: {
+            navy: {
+              950: '#060d1a',
+              900: '#0a1628',
+              800: '#112240',
+              700: '#1d3557',
+            },
+            gold: {
+              400: '#f5d061',
+              500: '#d4af37',
+              600: '#b59224',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #040812;
+      font-family: 'Cairo', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .mobile-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background-color: #0a1628;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.85);
+      border-left: 1px solid rgba(212, 175, 55, 0.15);
+      border-right: 1px solid rgba(212, 175, 55, 0.15);
+      overflow-x: hidden;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="text-white antialiased selection:bg-gold-500 selection:text-navy-900">
+
+  <div class="mobile-shell">
+
+    <!-- شاشة تسجيل الدخول للأدمن -->
+    <div id="login-screen" class="flex-1 flex flex-col justify-between p-7 bg-gradient-to-b from-navy-900 via-navy-900 to-navy-950">
+      <div class="pt-10 text-center">
+        <div class="w-24 h-24 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-gold-400 to-gold-600 p-0.5 shadow-xl shadow-gold-500/20">
+          <div class="w-full h-full bg-navy-900 rounded-[22px] flex items-center justify-center">
+            <i class="fa-solid fa-user-shield text-4xl text-gold-500"></i>
+          </div>
+        </div>
+        <h1 class="text-2xl font-extrabold text-white tracking-wide">لوحة تحكم الأدمن</h1>
+        <p class="text-gold-400 text-sm mt-1 font-semibold">عقارات روما غزة</p>
+      </div>
+
+      <div class="bg-navy-800/70 border border-gold-500/20 rounded-3xl p-6 text-center backdrop-blur-sm my-6">
+        <h2 class="text-lg font-bold text-white mb-2">تسجيل دخول المشرف</h2>
+        <p class="text-gray-300 text-xs leading-relaxed mb-6">
+          يرجى تسجيل الدخول بحساب المشرف المخول بإدارة وعرض العقارات.
+        </p>
+
+        <button id="google-login-btn" class="w-full py-3.5 px-4 bg-white hover:bg-gray-100 text-navy-900 font-bold rounded-2xl flex items-center justify-center gap-3 shadow-lg active:scale-95 transition">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5" />
+          <span>دخول حساب المشرف Google</span>
+        </button>
+
+        <p id="login-error" class="text-red-400 text-xs mt-3 hidden"></p>
+      </div>
+
+      <div class="text-center pb-4">
+        <p class="text-[11px] text-gray-500">جميع الحقوق محفوظة &copy; عقارات روما غزة</p>
+      </div>
+    </div>
+
+    <!-- لوحة التحكم الرئيسية (تظهر بعد تسجيل الدخول) -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col pb-20">
+
+      <!-- الشريط العلوي -->
+      <header class="sticky top-0 z-30 bg-navy-900/95 backdrop-blur-md border-b border-gold-500/20 px-4 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-gold-500/15 border border-gold-500/40 flex items-center justify-center text-gold-500">
+            <i class="fa-solid fa-sliders text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-base font-extrabold text-white leading-tight">إدارة العقارات</h1>
+            <p id="admin-name" class="text-[11px] text-gold-400 font-medium">لوحة المشرف</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="logout-btn" title="تسجيل الخروج" class="w-9 h-9 rounded-xl bg-navy-800 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-white/10 flex items-center justify-center transition">
+            <i class="fa-solid fa-right-from-bracket text-sm"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- زر إضافة عقار جديد -->
+      <div class="p-4 bg-navy-950/40 border-b border-white/5">
+        <button id="open-add-modal-btn" class="w-full py-3 bg-gradient-to-r from-gold-500 to-gold-600 text-navy-900 font-extrabold rounded-2xl flex items-center justify-center gap-2 shadow-lg active:scale-95 transition">
+          <i class="fa-solid fa-circle-plus text-base"></i>
+          <span>إضافة عقار جديد للنظام</span>
+        </button>
+      </div>
+
+      <!-- قائمة العقارات الخاصة بالأدمن -->
+      <main id="admin-properties-container" class="p-4 space-y-4 flex-1">
+        <div id="loading-state" class="py-16 text-center">
+          <i class="fa-solid fa-circle-notch fa-spin text-3xl text-gold-500 mb-3"></i>
+          <p class="text-sm text-gray-400">جاري تحميل لوحة التحكم...</p>
+        </div>
+      </main>
+
+    </div>
+
+    <!-- نافذة إضافة/تعديل عقار (Modal) -->
+    <div id="property-modal" class="hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm flex items-end justify-center max-w-[430px] mx-auto">
+      <div class="bg-navy-900 w-full max-h-[92vh] rounded-t-3xl border-t border-gold-500/30 flex flex-col overflow-hidden">
+        <div class="p-4 bg-navy-950 border-b border-white/10 flex items-center justify-between">
+          <h3 id="modal-heading" class="text-base font-extrabold text-white">إضافة عقار جديد</h3>
+          <button id="close-modal-btn" class="w-8 h-8 rounded-full bg-navy-800 text-gray-300 flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="property-form" class="p-4 overflow-y-auto space-y-3.5 flex-1 text-xs">
+          <input type="hidden" id="prop-id" />
+
+          <div>
+            <label class="block text-gray-300 font-bold mb-1">عنوان العقار</label>
+            <input type="text" id="prop-title" required placeholder="مثال: شقة فاخرة مفروشة في الرمال" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">نوع العقار</label>
+              <select id="prop-type" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none">
+                <option value="شقة">شقة</option>
+                <option value="أرض">أرض</option>
+                <option value="محل">محل تجاري</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">نوع العرض</label>
+              <select id="prop-offer" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none">
+                <option value="بيع">بيع</option>
+                <option value="إيجار">إيجار</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">المنطقة / العنوان</label>
+              <input type="text" id="prop-location" required placeholder="غزة - الرمال" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+            </div>
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">السعر المطلوب</label>
+              <input type="text" id="prop-price" required placeholder="45,000 $ أو 300$" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">المساحة (م²)</label>
+              <input type="text" id="prop-area" placeholder="150" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+            </div>
+            <div>
+              <label class="block text-gray-300 font-bold mb-1">الغرف / التفاصيل</label>
+              <input type="text" id="prop-rooms" placeholder="3 غرف / طابق 2" class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-gray-300 font-bold mb-1">رابط صورة العقار (URL)</label>
+            <input type="url" id="prop-img" required placeholder="https://images.unsplash.com/..." class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-gray-300 font-bold mb-1">وصف تفصيلي للعقار</label>
+            <textarea id="prop-desc" rows="3" placeholder="اكتب تفاصيل إضافية هنا..." class="w-full bg-navy-800 border border-white/10 focus:border-gold-500 rounded-xl p-2.5 text-white outline-none"></textarea>
+          </div>
+
+          <!-- بيانات سرية تظهر للأدمن فقط -->
+          <div class="bg-navy-950/80 p-3 rounded-2xl border border-gold-500/30 space-y-2">
+            <span class="text-gold-400 font-bold block"><i class="fa-solid fa-lock text-[11px]"></i> بيانات إدارية (سرية للزبون):</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-gray-400 mb-1">اسم المالك ورقم,التواصل</label>
+                <input type="text" id="prop-owner" placeholder="أبو محمد - 059..." class="w-full bg-navy-900 border border-white/10 rounded-xl p-2 text-white" />
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">حالة العقار</label>
+                <select id="prop-status" class="w-full bg-navy-900 border border-white/10 rounded-xl p-2 text-white">
+                  <option value="متاح">متاح (يظهر للزبائن)</option>
+                  <option value="مباع">مباع (يخفي من الزبائن)</option>
+                  <option value="مؤجر">مؤجر (يخفي من الزبائن)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 bg-gold-500 text-navy-900 font-extrabold rounded-xl shadow-lg mt-2">
+            حفظ ونشر العقار
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // نفس إعدادات قاعدة البيانات المشتركة مع تطبيق الزبون
+    const firebaseConfig = {
+      apiKey: "AIzaSyAouBhzITvsjMH3mSCDhJRIy0ww8dB3SR0",
+      authDomain: "roma-gaza.firebaseapp.com",
+      projectId: "roma-gaza",
+      storageBucket: "roma-gaza.firebasestorage.app",
+      messagingSenderId: "1073475220758",
+      appId: "1:1073475220758:web:f617fe38f25c17e75f8c37",
+      measurementId: "G-BKDB9C2W95"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const loginError = document.getElementById('login-error');
+    const adminContainer = document.getElementById('admin-properties-container');
+    const propertyModal = document.getElementById('property-modal');
+    const openAddModalBtn = document.getElementById('open-add-modal-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const propertyForm = document.getElementById('property-form');
+
+    let allProperties = [];
+
+    googleLoginBtn.addEventListener('click', async () => {
+      loginError.classList.add('hidden');
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error(error);
+        loginError.textContent = "تعذر تسجيل الدخول. يتاكد من استخدام خادم محلي (Live Server).";
+        loginError.classList.remove('hidden');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        document.getElementById('admin-name').textContent = user.displayName || 'مشرف النظام';
+        listenToProperties();
+      } else {
+        appScreen.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+      }
+    });
+
+    function listenToProperties() {
+      const q = query(collection(db, "properties"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        allProperties = [];
+        snapshot.forEach((docSnap) => {
+          allProperties.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        renderAdminProperties();
+      });
+    }
+
+    function renderAdminProperties() {
+      if (allProperties.length === 0) {
+        adminContainer.innerHTML = `
+          <div class="text-center py-14">
+            <i class="fa-solid fa-folder-open text-3xl text-gray-500 mb-3"></i>
+            <p class="text-sm text-gray-400">لا توجد عقارات مضافة بعد. اضغط على زر الإضافة أعلاه.</p>
+          </div>
+        `;
+        return;
+      }
+
+      adminContainer.innerHTML = allProperties.map(prop => {
+        const isAvailable = prop.status !== 'مباع' && prop.status !== 'مؤجر';
+        return `
+          <article class="bg-navy-800/80 border ${isAvailable ? 'border-white/10' : 'border-red-500/30'} rounded-3xl overflow-hidden shadow-lg p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-lg bg-navy-900 text-gold-400 text-xs font-bold border border-gold-500/30">${prop.type} - ${prop.offerType}</span>
+              <span class="px-2.5 py-1 rounded-lg ${isAvailable ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'} text-xs font-bold">
+                ${prop.status || 'متاح'}
+              </span>
+            </div>
+
+            <div class="flex gap-3">
+              <img src="${prop.imageUrl}" alt="" class="w-20 h-20 rounded-2xl object-cover bg-navy-950" />
+              <div class="flex-1">
+                <h3 class="font-bold text-white text-sm line-clamp-1">${prop.title}</h3>
+                <p class="text-xs text-gold-400 font-extrabold mt-1">${prop.price}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5"><i class="fa-solid fa-location-dot"></i> ${prop.location}</p>
+              </div>
+            </div>
+
+            <div class="bg-navy-950/60 p-2.5 rounded-xl text-[11px] text-gray-300 space-y-1">
+              <p><strong>المالك:</strong> ${prop.owner || 'غير محدد'}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <button onclick="editProperty('${prop.id}')" class="py-2 bg-navy-700 hover:bg-navy-600 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-pen-to-square"></i> تعديل العقار
+              </button>
+              <button onclick="deleteProperty('${prop.id}')" class="py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> حذف
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // فتح نافذة الإضافة
+    openAddModalBtn.addEventListener('click', () => {
+      document.getElementById('modal-heading').textContent = 'إضافة عقار جديد';
+      propertyForm.reset();
+      document.getElementById('prop-id').value = '';
+      propertyModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      propertyModal.classList.add('hidden');
+    });
+
+    // تعديل عقار
+    window.editProperty = (id) => {
+      const prop = allProperties.find(p => p.id === id);
+      if (!prop) return;
+      document.getElementById('modal-heading').textContent = 'تعديل بيانات العقار';
+      document.getElementById('prop-id').value = prop.id;
+      document.getElementById('prop-title').value = prop.title;
+      document.getElementById('prop-type').value = prop.type;
+      document.getElementById('prop-offer').value = prop.offerType;
+      document.getElementById('prop-location').value = prop.location;
+      document.getElementById('prop-price').value = prop.price;
+      document.getElementById('prop-area').value = prop.area;
+      document.getElementById('prop-rooms').value = prop.rooms;
+      document.getElementById('prop-img').value = prop.imageUrl;
+      document.getElementById('prop-desc').value = prop.description;
+      document.getElementById('prop-owner').value = prop.owner || '';
+      document.getElementById('prop-status').value = prop.status || 'متاح';
+      propertyModal.classList.remove('hidden');
+    };
+
+    // حفظ النموذج (إضافة أو تحديث)
+    propertyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('prop-id').value;
+      const data = {
+        title: document.getElementById('prop-title').value,
+        type: document.getElementById('prop-type').value,
+        offerType: document.getElementById('prop-offer').value,
+        location: document.getElementById('prop-location').value,
+        price: document.getElementById('prop-price').value,
+        area: document.getElementById('prop-area').value || '-',
+        rooms: document.getElementById('prop-rooms').value || '-',
+        imageUrl: document.getElementById('prop-img').value,
+        description: document.getElementById('prop-desc').value,
+        owner: document.getElementById('prop-owner').value,
+        status: document.getElementById('prop-status').value,
+        updatedAt: serverTimestamp()
+      };
+
+      try {
+        if (id) {
+          await updateDoc(doc(db, "properties", id), data);
+        } else {
+          data.createdAt = serverTimestamp();
+          await addDoc(collection(db, "properties"), data);
+        }
+        propertyModal.classList.add('hidden');
+      } catch (err) {
+        console.error(err);
+        alert('حدث خطأ أثناء حفظ البيانات.');
+      }
+    });
+
+    // حذف العقار
+    window.deleteProperty = async (id) => {
+      if (confirm('هل أنت متأكد من حذف هذا العقار نهائياً؟')) {
+        try {
+          await deleteDoc(doc(db, "properties", id));
+        } catch (err) {
+          console.error(err);
+          alert('تعذر حذف العقار.');
+        }
+      }
+    };
+  </script>
+</body>
+</html>
